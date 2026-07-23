@@ -8,9 +8,14 @@ export const pool = new Pool({
 });
 
 export async function initDb() {
-  await pool.query(`
-    CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+  // Prefer built-in gen_random_uuid (PG13+). Extension create can fail on managed DBs.
+  try {
+    await pool.query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto"`);
+  } catch (err) {
+    console.warn('pgcrypto extension not created (may already be available):', err.message);
+  }
 
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       email TEXT UNIQUE NOT NULL,
