@@ -22,16 +22,10 @@ export const pool = new Pool({
 });
 
 export async function initDb() {
-  // Prefer built-in gen_random_uuid (PG13+). Extension create can fail on managed DBs.
-  try {
-    await pool.query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto"`);
-  } catch (err) {
-    console.warn('pgcrypto extension not created (may already be available):', err.message);
-  }
-
+  // No Postgres extensions required — UUIDs are generated in the app.
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      id UUID PRIMARY KEY,
       email TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -51,7 +45,7 @@ export async function initDb() {
     CREATE INDEX IF NOT EXISTS todos_owner_day_idx ON todos(owner_id, day);
 
     CREATE TABLE IF NOT EXISTS list_shares (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      id UUID PRIMARY KEY,
       owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       shared_with_email TEXT NOT NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

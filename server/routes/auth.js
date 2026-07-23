@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
+import { randomUUID } from 'node:crypto';
 import { query } from '../db.js';
 import { isValidEmail, normalizeEmail, requireAuth } from '../util.js';
 
@@ -22,11 +23,12 @@ authRouter.post('/register', async (req, res) => {
       return res.status(409).json({ error: 'An account with that email already exists' });
     }
 
+    const id = randomUUID();
     const passwordHash = await bcrypt.hash(password, 12);
     const result = await query(
-      `INSERT INTO users (email, password_hash) VALUES ($1, $2)
+      `INSERT INTO users (id, email, password_hash) VALUES ($1, $2, $3)
        RETURNING id, email`,
-      [email, passwordHash]
+      [id, email, passwordHash]
     );
 
     const user = result.rows[0];

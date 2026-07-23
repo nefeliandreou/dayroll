@@ -99,10 +99,10 @@ listsRouter.post('/me/shares', async (req, res) => {
     }
 
     await query(
-      `INSERT INTO list_shares (owner_id, shared_with_email)
-       VALUES ($1, $2)
+      `INSERT INTO list_shares (id, owner_id, shared_with_email)
+       VALUES ($1, $2, $3)
        ON CONFLICT (owner_id, shared_with_email) DO NOTHING`,
-      [req.session.userId, email]
+      [randomUUID(), req.session.userId, email]
     );
 
     res.status(201).json({ email });
