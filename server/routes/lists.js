@@ -123,7 +123,8 @@ listsRouter.delete('/me/shares/:email', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Could not remove share' });
-
+  }
+});
 
 listsRouter.get('/:ownerId/todos', async (req, res) => {
   try {
