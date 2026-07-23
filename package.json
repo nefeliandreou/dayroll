@@ -19,12 +19,12 @@
     "connect-pg-simple": "^10.0.0",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
-    "pg": "^8.13.1"
+    "pg": "^8.13.1",
+    "vite": "^5.2.11"
   },
   "devDependencies": {
     "fast-check": "^3.19.0",
     "typescript": "^5.4.5",
-    "vite": "^5.2.11",
     "vitest": "^1.6.0"
   }
 }

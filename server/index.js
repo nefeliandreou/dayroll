@@ -18,7 +18,17 @@ async function main() {
     process.exit(1);
   }
 
-  await initDb();
+  // Free DBs can take a moment to accept connections after provision.
+  for (let attempt = 1; attempt <= 10; attempt++) {
+    try {
+      await initDb();
+      break;
+    } catch (err) {
+      console.error(`DB init attempt ${attempt}/10 failed:`, err.message);
+      if (attempt === 10) throw err;
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+  }
 
   const app = express();
   app.set('trust proxy', 1);
@@ -54,14 +64,15 @@ async function main() {
 
   const dist = path.join(root, 'dist');
   app.use(express.static(dist));
-  app.get('*', (req, res, next) => {
+  app.use((req, res, next) => {
     if (req.path.startsWith('/api')) return next();
+    if (req.method !== 'GET' && req.method !== 'HEAD') return next();
     res.sendFile(path.join(dist, 'index.html'), (err) => {
-      if (err) next();
+      if (err) next(err);
     });
   });
 
-  app.listen(port, () => {
+  app.listen(port, '0.0.0.0', () => {
     console.log(`Dayroll listening on :${port}`);
   });
 }

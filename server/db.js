@@ -2,9 +2,23 @@ import pg from 'pg';
 
 const { Pool } = pg;
 
+function sslOption() {
+  if (process.env.DATABASE_SSL === 'false') return false;
+  if (process.env.DATABASE_SSL === 'true') return { rejectUnauthorized: false };
+
+  // Render external DB hosts need SSL; internal hosts (dpg-…-a) do not.
+  try {
+    const host = new URL(process.env.DATABASE_URL).hostname;
+    if (host.endsWith('render.com')) return { rejectUnauthorized: false };
+  } catch {
+    // ignore bad URL; connection will fail later with a clearer error
+  }
+  return false;
+}
+
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_SSL === 'false' ? false : { rejectUnauthorized: false },
+  ssl: sslOption(),
 });
 
 export async function initDb() {
